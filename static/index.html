@@ -1,0 +1,125 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .chat-container {
+      width: 400px;
+      height: 600px;
+      background: white;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .chat-header {
+      background: #4a90e2;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 75%;
+    }
+    .user {
+      background: #4a90e2;
+      color: white;
+      margin-left: auto;
+    }
+    .bot {
+      background: #e5e5ea;
+      color: black;
+      margin-right: auto;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+    }
+    .chat-input button {
+      padding: 10px 15px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      background: #357ab8;
+    }
+  </style>
+</head>
+<body>
+<div class="chat-container">
+  <div class="chat-header">Chatbot</div>
+  <div id="messages" class="chat-messages"></div>
+  <div class="chat-input">
+    <input id="input" type="text" placeholder="Digite sua mensagem..." />
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+</div>
+<script>
+  const messagesDiv = document.getElementById("messages");
+  const input = document.getElementById("input");
+  function addMessage(text, sender) {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerText = text;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, "user");
+    input.value = "";
+    try {
+      const response = await fetch("http://127.0.0.1:8000/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: "eduardo",
+          message: text
+        })
+      });
+      const data = await response.json();
+      addMessage(data.response, "bot");
+    } catch (error) {
+      addMessage(error, "bot");
+    }
+  }
+  // Enter para enviar
+  input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+</script>
+</body>
+</html>
