@@ -85,6 +85,7 @@
 <script>
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("input");
+  
   function addMessage(text, sender) {
     const msg = document.createElement("div");
     msg.classList.add("message", sender);
@@ -108,10 +109,23 @@
           message: text
         })
       });
+
+      if (!response.ok) {
+        const err = await response.json();
+        addMessage(err.detail || "Erro na API", "bot");
+        return;
+      }
+
       const data = await response.json();
-      addMessage(data.response, "bot");
-    } catch (error) {
-      addMessage(error, "bot");
+
+      if (data.error) {
+        addMessage(data.message, "bot");
+      } else {
+        addMessage(data.response, "bot");
+      }
+      
+    } catch (error) { 
+      addMessage(error.message || "Erro de conexão", "bot");
     }
   }
   // Enter para enviar

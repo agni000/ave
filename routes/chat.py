@@ -11,5 +11,5 @@ def root():
 
 @router.post("/")
 def chat(req: ChatRequest):
-    reply = generate_response(req.message)
-    return {"response": reply}
+    return generate_response(req.message)
+    
