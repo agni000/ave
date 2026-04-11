@@ -13,7 +13,7 @@ app.include_router(chat_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # for dev only
+    allow_origins=["*"],  # dev 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

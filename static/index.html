@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Chatbot</title>
+  <title>ave</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
       margin: 0;
     }
     .chat-container {
-      width: 400px;
+      width: 600px;
       height: 600px;
       background: white;
       border-radius: 10px;
@@ -75,13 +75,14 @@
 </head>
 <body>
 <div class="chat-container">
-  <div class="chat-header">Chatbot</div>
+  <div class="chat-header">ave chat</div>
   <div id="messages" class="chat-messages"></div>
   <div class="chat-input">
     <input id="input" type="text" placeholder="Digite sua mensagem..." />
     <button onclick="sendMessage()">Enviar</button>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("input");
@@ -89,7 +90,7 @@
   function addMessage(text, sender) {
     const msg = document.createElement("div");
     msg.classList.add("message", sender);
-    msg.innerText = text;
+    msg.innerHTML = marked.parse(text);
     messagesDiv.appendChild(msg);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
