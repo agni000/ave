@@ -1,6 +1,7 @@
 import sqlite3
 import uuid
 import os
+from core.text_utils import make_preview
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "db", "ave.db")
@@ -18,7 +19,9 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS conversations (
         id TEXT PRIMARY KEY,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_message TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
@@ -44,8 +47,8 @@ def create_conversation():
     conversation_id = str(uuid.uuid4())
 
     cursor.execute(
-        "INSERT INTO conversations (id) VALUES (?)",
-        (conversation_id,)
+        "INSERT INTO conversations (id, last_message, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+        (conversation_id, None)
     )
 
     conn.commit()
@@ -58,22 +61,35 @@ def get_or_create_conversation(conversation_id: str):
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT OR IGNORE INTO conversations (id)
-        VALUES (?)
-    """, (conversation_id,))
+        INSERT OR IGNORE INTO conversations (id, last_message, updated_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+    """, (conversation_id, None))
 
     conn.commit()
     conn.close()
+
+    return conversation_id
 
 def save_message(conversation_id: str, role: str, content: str):
     conn = get_connection()
     cursor = conn.cursor()
 
+    # salva mensagem 
     cursor.execute(
         "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
         (conversation_id, role, content)
     )
+   
+    content_preview = make_preview(content) 
 
+    # atualiza metadata da conversa
+    cursor.execute("""
+        UPDATE conversations
+        SET last_message = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (content_preview, conversation_id))
+    
     conn.commit()
     conn.close()
 
