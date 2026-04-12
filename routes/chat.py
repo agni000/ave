@@ -3,12 +3,17 @@ from models.schemas import ChatRequest
 from services.llm import generate_response
 from fastapi.responses import FileResponse
 from db.database import save_message, get_or_create_conversation, get_connection
+import os 
 
 router = APIRouter()
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UI_PATH = os.path.join(BASE_DIR, "static", "index.html")
+
 @router.get("/")
 def root():
-    return FileResponse("static/index.html")
+    return FileResponse(UI_PATH)
+
 
 @router.get("/historico")
 def get_historico():
