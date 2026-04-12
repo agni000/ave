@@ -37,7 +37,7 @@ body {
   background: #d6d6d6;
 }
 
-/* CHAT AREA */
+/* CHAT */
 .chat-container {
   flex: 1;
   display: flex;
@@ -72,7 +72,7 @@ body {
   margin-left: auto;
 }
 
-.bot {
+.assistant {
   background: #e5e5ea;
   color: black;
   margin-right: auto;
@@ -102,6 +102,25 @@ body {
 .chat-input button:hover {
   background: #357ab8;
 }
+
+.chat-input input:disabled {
+  background: #f2f2f2;
+}
+
+.new-chat-btn {
+  margin: 10px;
+  padding: 10px;
+  border: none;
+  background: #4a90e2;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.new-chat-btn:hover {
+  background: #357ab8;
+}
 </style>
 </head>
 
@@ -110,6 +129,9 @@ body {
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-header">Histórico</div>
+  <button class="new-chat-btn" onclick="newChat()">
+    + Novo chat
+  </button>
   <div id="history"></div>
 </div>
 
@@ -129,17 +151,20 @@ body {
 
 <script>
 let conversationId = sessionStorage.getItem("conversation_id");
-
 if (!conversationId) {
   conversationId = crypto.randomUUID();
   sessionStorage.setItem("conversation_id", conversationId);
 }
 
+let isReadOnly = false;
+
 const messagesDiv = document.getElementById("messages");
 const input = document.getElementById("input");
 const historyDiv = document.getElementById("history");
 
-/* Adiciona mensagem no chat atual */
+/* =========================
+   MENSAGENS
+========================= */
 function addMessage(text, sender) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
@@ -148,8 +173,12 @@ function addMessage(text, sender) {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-/* Envia a mensagem para o servidor */
+/* =========================
+   ENVIAR MENSAGEM
+========================= */
 async function sendMessage() {
+  if (isReadOnly) return;
+
   const text = input.value.trim();
   if (!text) return;
 
@@ -168,13 +197,53 @@ async function sendMessage() {
   const data = await response.json();
 
   if (data.error) {
-    addMessage(data.message, "bot");
+    addMessage(data.message, "assistant");
   } else {
-    addMessage(data.response, "bot");
+    addMessage(data.response, "assistant");
   }
 }
 
-/* Carrega o preview do histórico de mensagens */
+/* =========================
+   CARREGAR CONVERSA
+========================= */
+async function loadConversation(id, readonly = false) {
+  conversationId = id;
+  sessionStorage.setItem("conversation_id", id);
+
+  isReadOnly = readonly;
+  input.disabled = readonly;
+
+  const res = await fetch(`http://127.0.0.1:8000/conversations/${id}/messages`);
+  const data = await res.json();
+
+  messagesDiv.innerHTML = "";
+
+  data.forEach(msg => {
+    addMessage(msg.content, msg.role);
+  });
+}
+
+/* =========================
+   NOVA CONVERSA (BOTÃO)
+========================= */
+function newChat() {
+  const id = crypto.randomUUID();
+
+  conversationId = id;
+  sessionStorage.setItem("conversation_id", id);
+
+  isReadOnly = false;
+  input.disabled = false;
+
+  messagesDiv.innerHTML = "";
+
+  // opcional: atualizar histórico sem reload
+  loadHistory();
+}
+
+/* =========================
+   HISTÓRICO
+========================= */
 async function loadHistory() {
   const res = await fetch("http://127.0.0.1:8000/historico");
   const data = await res.json();
@@ -187,21 +256,23 @@ async function loadHistory() {
     div.innerText = conv.last_message || "Nova conversa";
 
     div.onclick = () => {
-      sessionStorage.setItem("conversation_id", conv.id);
-      location.reload();
+      loadConversation(conv.id, true);
     };
 
     historyDiv.appendChild(div);
   });
 }
 
+/* =========================
+   INIT
+========================= */
 loadHistory();
+loadConversation(conversationId, false);
 
-/* Evento associado ao enter */
+/* ENTER */
 input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 </script>
-
 </body>
 </html>

@@ -33,6 +33,30 @@ def get_historico():
         for row in rows
     ]
 
+@router.get("/conversations/{conversation_id}/messages")
+def get_conversation_messages(conversation_id: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT role, content, created_at
+        FROM messages
+        WHERE conversation_id = ?
+        ORDER BY created_at ASC
+    """, (conversation_id,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "role": row[0],
+            "content": row[1],
+            "created_at": row[2]
+        }
+        for row in rows
+    ]
+
 @router.post("/")
 def chat(req: ChatRequest):
     conversation_id = req.conversation_id 
