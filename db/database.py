@@ -40,22 +40,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-def create_conversation():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    conversation_id = str(uuid.uuid4())
-
-    cursor.execute(
-        "INSERT INTO conversations (id, last_message, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
-        (conversation_id, None)
-    )
-
-    conn.commit()
-    conn.close()
-
-    return conversation_id
-
 def get_or_create_conversation(conversation_id: str):
     conn = get_connection()
     cursor = conn.cursor()
