@@ -1,6 +1,6 @@
 # ave
 
-Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadêmica de Inteligência Artificial I: backend em **FastAPI**, persistência em **SQLite** (conversas e mensagens) e **interface web** em página única que consome a API de *chat completions* do [NVIDIA NIM](https://build.nvidia.com/) (modelo Mistral *instruct*). O assistente responde em **português** e mantém o foco em tópicos de química.
+Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadêmica de Inteligência Artificial I: backend em **FastAPI**, persistência em **SQLite** (conversas e mensagens) e **interface web** em página única que consome a API do modelo [ministral-14b-instruct-2512](https://build.nvidia.com/mistralai/ministral-14b-instruct-2512). O assistente responde em **português** e mantém o foco em tópicos de química.
 
 ---
 
@@ -10,14 +10,12 @@ Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadê
 - [Arquitetura](#arquitetura)
 - [Requisitos](#requisitos)
 - [Início rápido](#início-rápido)
-- [Configuração](#configuração)
 - [Executando a aplicação](#executando-a-aplicação)
 - [Referência da API](#referência-da-api)
 - [Interface web](#interface-web)
 - [Armazenamento de dados](#armazenamento-de-dados)
 - [Estrutura do projeto](#estrutura-do-projeto)
-- [Solução de problemas](#solução-de-problemas)
-- [Licença](#licença)
+- [Limitações](#limitações) 
 
 ---
 
@@ -26,8 +24,8 @@ Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadê
 - Interface de chat com renderização Markdown (via CDN do [marked](https://github.com/markedjs/marked)).
 - Lista de conversas (“Histórico”) persistida no SQLite.
 - Fluxo de nova conversa com IDs gerados no cliente (`crypto.randomUUID()`).
-- Visualização somente leitura de conversas antigas pela barra lateral.
-- Janela recente de mensagens enviada ao LLM no servidor (em memória; ver [Arquitetura](#arquitetura)).
+- Visualização de conversas antigas pela sidebar.
+- Janela recente de mensagens enviada ao LLM no servidor (em memória).
 
 ---
 
@@ -35,37 +33,36 @@ Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadê
 
 ```mermaid
 flowchart LR
-  Browser["Navegador UI estática"]
-  FastAPI["App FastAPI"]
+  Browser["Interface"]
+  FastAPI["Servidor"]
   SQLite[("SQLite ave.db")]
-  NIM["API NVIDIA NIM"]
+  Model["mistralai/ministral-14b-instruct-2512"]
 
   Browser -->|"HTTP JSON"| FastAPI
   FastAPI --> SQLite
-  FastAPI -->|HTTPS| NIM
+  FastAPI -->|HTTPS| Model
 ```
 
 1. O navegador carrega `GET /` (arquivo `static/index.html`).
 2. `POST /` envia a mensagem do usuário e o `conversation_id`; a API grava as mensagens e chama o modelo.
 3. O histórico usa `GET /historico` e `GET /conversations/{id}/messages`.
 
-**Contexto do LLM:** as últimas interações ficam em uma lista no módulo `services/llm.py` (compartilhada entre todas as requisições). Para um demo de usuário único costuma ser suficiente; o contexto **não** fica isolado por `conversation_id` no payload enviado ao modelo.
-
 ---
 
 ## Requisitos
 
 - **Python 3.10+** (recomendado; compatível com as versões atuais de FastAPI/Pydantic).
-- Uma **chave de API da NVIDIA** com acesso ao endpoint integrado usado no código (`integrate.api.nvidia.com`).
+- Uma **chave de API da NVIDIA** com acesso ao modelo ministral-14b-instruct-2512.
 
 ---
 
 ## Início rápido
 
-### 1. Entrar na pasta do projeto
+### 1. Clonar o repositório 
 
 ```bash
-cd chatbot
+git clone https://github.com/seu-usuario/ave.git
+cd ave
 ```
 
 ### 2. Criar e ativar um ambiente virtual
@@ -84,23 +81,13 @@ pip install -r requirements.txt
 
 ### 4. Variáveis de ambiente
 
-Crie um arquivo `.env` na **raiz do projeto** (mesmo diretório que `main.py`). Esse arquivo está no **`.gitignore`** — não commite segredos.
+Crie um arquivo `.env` na **raiz do projeto** (mesmo diretório que `main.py`).
 
 ```env
 NVIDIA_API_KEY=sua_chave_nvidia_aqui
 ```
 
 Obtenha a chave na documentação para desenvolvedores / NIM, conforme sua conta NVIDIA.
-
----
-
-## Configuração
-
-| Variável           | Obrigatória | Descrição                                              |
-|--------------------|-------------|--------------------------------------------------------|
-| `NVIDIA_API_KEY`   | Sim         | Token *Bearer* para a API de chat integrada NVIDIA.    |
-
-O `python-dotenv` carrega o `.env` automaticamente quando `core/config` é importado.
 
 ---
 
@@ -113,9 +100,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Em seguida abra **http://127.0.0.1:8000/** no navegador.
-
-- **Documentação OpenAPI (Swagger):** http://127.0.0.1:8000/docs  
-- **ReDoc:** http://127.0.0.1:8000/redoc  
 
 ---
 
@@ -200,7 +184,7 @@ Mensagens de uma conversa, da mais antiga para a mais recente.
 
 ## Interface web
 
-- Arquivos estáticos são servidos em **`/static`** (útil se você adicionar CSS/JS em `static/`).
+- Arquivos estáticos são servidos em **`/static`**
 - A interface embutida chama a API em **`http://127.0.0.1:8000`**. Se mudar host ou porta, atualize as URLs do `fetch` em `static/index.html` ou use **URLs relativas** (por exemplo `fetch("/", { method: "POST", ... })`) para que a origem acompanhe a página.
 
 ---
@@ -212,14 +196,12 @@ Mensagens de uma conversa, da mais antiga para a mais recente.
   - `conversations` — `id`, prévia em `last_message`, datas.
   - `messages` — `conversation_id`, `role`, `content`, `created_at`.
 
-O diretório `db/` é garantido na importação; `ave.db` está no `.gitignore` para não versionar dados locais.
-
 ---
 
 ## Estrutura do projeto
 
 ```
-chatbot/
+ave/
 ├── main.py              # App FastAPI, CORS, estáticos, init do BD na subida
 ├── requirements.txt
 ├── .env                 # só na sua máquina — você cria; não vai pro git
@@ -239,19 +221,6 @@ chatbot/
     └── index.html       # UI do chat (marked.js via CDN)
 ```
 
----
+## Limitações
 
-## Solução de problemas
-
-| Sintoma | O que verificar |
-|---------|-----------------|
-| `Bearer None` ou 401 da NVIDIA | `NVIDIA_API_KEY` definida no `.env`; reinicie o servidor após editar. |
-| 404 em `/static/...` ou UI quebrada | Execute o Uvicorn na **raiz do repositório**, não em subpasta. |
-| UI abre mas o `fetch` falha | Porta/host diferentes: a UI assume `127.0.0.1:8000` — alinhe com o Uvicorn ou use `fetch` com URLs relativas. |
-| Erro de banco na primeira execução | Permissão para criar/gravar `db/ave.db` (disco, permissões de pasta). |
-
----
-
-## Licença
-
-Indique aqui a licença do projeto (por exemplo MIT) ou, se for apenas trabalho acadêmico, algo como “Todos os direitos reservados”.
+- O contexto do modelo é mantido em memória no servidor e não é isolado por `conversation_id`. Como o sistema foi desenvolvido como uma demonstração de uso individual, essa simplificação foi adotada para reduzir a complexidade.
