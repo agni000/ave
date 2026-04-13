@@ -14,8 +14,8 @@ UI_PATH = os.path.join(BASE_DIR, "static", "index.html")
 def root():
     return FileResponse(UI_PATH)
 
-@router.get("/historico")
-def get_historico():
+@router.get("/conversations")
+def get_history():
     return get_conversations()
 
 @router.get("/conversations/{conversation_id}/messages")
@@ -35,8 +35,15 @@ def chat(req: ChatRequest):
 
     result = generate_response(req.message, context)
 
-    if not result["error"]:
-        save_message(conversation_id, "assistant", result["response"])
-
-    return result
+    if result["error"]:
+        raise HTTPException(
+        status_code=500,
+        detail=result["message"]
+    )
+    
+    save_message(conversation_id, "assistant", result["response"])
+    
+    return {
+        "response": result["response"]
+    }
 
