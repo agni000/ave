@@ -55,6 +55,29 @@ def get_or_create_conversation(conversation_id: str):
 
     return conversation_id
 
+def get_context(conversation_id, context_len):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT role, content
+        FROM messages
+        WHERE conversation_id = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (conversation_id, context_len))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    # inverter para ordem correta
+    rows.reverse()
+
+    return [
+        {"role": role, "content": content}
+        for role, content in rows
+    ]
+
 def save_message(conversation_id: str, role: str, content: str):
     conn = get_connection()
     cursor = conn.cursor()
