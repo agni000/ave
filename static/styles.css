@@ -12,6 +12,7 @@ body {
   border-right: 1px solid #ccc;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; 
 }
 
 .sidebar-header {
