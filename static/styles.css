@@ -66,6 +66,10 @@ body {
   margin-left: auto;
 }
 
+.typing {
+  opacity: 0.6;
+  font-style: italic;
+}
 .assistant {
   background: #e5e5ea;
   color: black;

@@ -42,7 +42,7 @@ const input = document.getElementById("input");
 const historyDiv = document.getElementById("history");
 
 /* =========================
-   MENSAGENS
+  ADICIONAR MENSAGEM
 ========================= */
 function addMessage(text, sender) {
   const msg = document.createElement("div");
@@ -62,22 +62,48 @@ async function sendMessage() {
   addMessage(text, "user");
   input.value = "";
 
-  const response = await fetch("http://127.0.0.1:8000/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      conversation_id: conversationId,
-      message: text
-    })
-  });
+  const typingMsg = showTyping();
 
-  const data = await response.json();
+  try {
+    const response = await fetch("http://127.0.0.1:8000/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        message: text
+      })
+    });
 
-  if (data.error) {
-    addMessage(data.message, "assistant");
-  } else {
+    typingMsg.remove();
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      addMessage(errorData.detail, "assistant");
+      return;
+    }
+
+    const data = await response.json();
     addMessage(data.response, "assistant");
-  }
+    loadHistory();
+
+  } catch (err) {
+    typingMsg.remove();
+    addMessage("Não foi possível conectar ao servidor", "assistant"); 
+  }  
+}
+
+/* =========================
+   MENSAGEM SIMPLES DE DIGITAÇÃO PARA O USUÁRIO
+========================= */
+function showTyping() {
+  const msg = document.createElement("div");
+  msg.classList.add("message", "assistant", "typing");
+  msg.innerText = "Digitando...";
+  
+  messagesDiv.appendChild(msg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  return msg; 
 }
 
 /* =========================
@@ -115,7 +141,7 @@ function newChat() {
    HISTÓRICO
 ========================= */
 async function loadHistory() {
-  const res = await fetch("http://127.0.0.1:8000/historico");
+  const res = await fetch("http://127.0.0.1:8000/conversations");
   const data = await res.json();
 
   historyDiv.innerHTML = "";
