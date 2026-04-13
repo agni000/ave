@@ -12,7 +12,6 @@ Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadê
 - [Início rápido](#início-rápido)
 - [Executando a aplicação](#executando-a-aplicação)
 - [Referência da API](#referência-da-api)
-- [Interface web](#interface-web)
 - [Armazenamento de dados](#armazenamento-de-dados)
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Limitações](#limitações) 
@@ -229,7 +228,8 @@ ave/
 ├── services/
 │   └── llm.py           # cliente NVIDIA + histórico em memória
 └── static/
-    └── index.html       # UI do chat
+    ├── index.html       # UI do chat
+    └── styles.css       # estilos da interface
 ```
 
 ## Limitações
