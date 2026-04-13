@@ -4,8 +4,6 @@ from core.config import NVIDIA_API_KEY
 URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 REQUEST_TIMEOUT = 30
 
-context_len = 12
-
 system_prompt = """You are a Chemistry tutor.
     Rules:
     - Respond in Portuguese
@@ -14,9 +12,10 @@ system_prompt = """You are a Chemistry tutor.
     - Use line breaks or bullet points when helpful
     - When writing chemical equations, format them clearly (e.g., H2 + O2 → H2O)
     - Never invent chemical compounds or minerals
-    - If unknown, say: "Não tenho certeza sobre isso"""
+    - If unknown, say: "Não tenho certeza sobre isso" """ 
 
 last_messages = []
+context_len = 12
 
 def generate_response(message: str):
     headers = {
