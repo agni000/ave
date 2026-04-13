@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from models.schemas import ChatRequest
 from services.llm import generate_response
 from fastapi.responses import FileResponse
-from db.database import save_message, get_or_create_conversation, get_connection, get_messages, get_conversations  
+from db.database import save_message, get_or_create_conversation, get_messages, get_conversations  
 import os 
 
 router = APIRouter()
