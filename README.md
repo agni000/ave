@@ -24,7 +24,7 @@ Chatbot de **tutoria em química** desenvolvido no contexto de disciplina acadê
 - Lista de conversas (“Histórico”) persistida no SQLite.
 - Fluxo de nova conversa com IDs gerados no cliente (`crypto.randomUUID()`).
 - Visualização de conversas antigas pela sidebar.
-- Janela recente de mensagens enviada ao LLM no servidor (em memória).
+- Janela recente de mensagens enviada ao LLM no servidor, o contexto é obtido através de uma query no banco e é adaptado à conversa atual.
 
 ---
 
@@ -44,7 +44,7 @@ flowchart LR
 
 1. O navegador carrega `GET /` (arquivo `static/index.html`).
 2. `POST /` envia a mensagem do usuário e o `conversation_id`; a API grava as mensagens e chama o modelo.
-3. O histórico usa `GET /historico` e `GET /conversations/{id}/messages`.
+3. O histórico usa `GET /conversations` e `GET /conversations/{id}/messages`.
 
 ---
 
@@ -95,7 +95,7 @@ Obtenha a chave [aqui](https://build.nvidia.com/mistralai/ministral-14b-instruct
 Inicie o **Uvicorn a partir da raiz do repositório** para que `StaticFiles(directory="static")` resolva os caminhos corretamente:
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --port 8000
 ```
 
 Em seguida abra **http://127.0.0.1:8000/** no navegador.
@@ -104,7 +104,7 @@ Em seguida abra **http://127.0.0.1:8000/** no navegador.
 
 ## Referência da API
 
-URL base (local padrão): `http://127.0.0.1:8000`
+URL base (localhost): `http://127.0.0.1:8000`
 
 ### `GET /`
 
@@ -126,18 +126,16 @@ Envia uma mensagem de chat para uma conversa.
 **Resposta de sucesso** (`200`, JSON):
 
 ```json
-{
-  "error": false,
+{ 
   "response": "Resposta do assistente em português."
 }
 ```
 
-**Resposta de erro** (`200` com flag de erro, JSON):
+**Resposta de erro** (`500`, JSON):
 
 ```json
 {
-  "error": true,
-  "message": "Erro legível (ex.: tempo esgotado, erro HTTP)."
+  "detail": "Erro legível (ex.: tempo esgotado, erro HTTP)."
 }
 ```
 
@@ -145,7 +143,7 @@ A mensagem do usuário é sempre salva; a resposta do assistente só é salva qu
 
 ---
 
-### `GET /historico`
+### `GET /conversations`
 
 Lista as conversas, da mais recente para a mais antiga ao lado do chat principal.
 
@@ -234,4 +232,5 @@ ave/
 
 ## Limitações
 
-- O contexto do modelo é mantido em memória no servidor e não é isolado por `conversation_id`. Como o sistema foi desenvolvido como uma demonstração de uso individual, essa simplificação foi adotada para reduzir a complexidade.
+ - Apenas uma janela recente de mensagens é enviada ao modelo (context window limitada). 
+  Isso significa que, em conversas muito longas, partes antigas podem não ser consideradas na geração de respostas.

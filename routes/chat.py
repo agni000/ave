@@ -40,9 +40,9 @@ def chat(req: ChatRequest):
         status_code=500,
         detail=result["message"]
     )
-    
+
     save_message(conversation_id, "assistant", result["response"])
-    
+
     return {
         "response": result["response"]
     }
