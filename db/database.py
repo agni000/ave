@@ -9,7 +9,9 @@ DB_PATH = os.path.join(BASE_DIR, "db", "ave.db")
 os.makedirs(os.path.join(BASE_DIR, "db"), exist_ok=True)
 
 def get_connection():
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn  
 
 def init_db():
     conn = get_connection()
