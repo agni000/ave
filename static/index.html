@@ -37,8 +37,6 @@ if (!conversationId) {
   sessionStorage.setItem("conversation_id", conversationId);
 }
 
-let isReadOnly = false;
-
 const messagesDiv = document.getElementById("messages");
 const input = document.getElementById("input");
 const historyDiv = document.getElementById("history");
@@ -58,8 +56,6 @@ function addMessage(text, sender) {
    ENVIAR MENSAGEM
 ========================= */
 async function sendMessage() {
-  if (isReadOnly) return;
-
   const text = input.value.trim();
   if (!text) return;
 
@@ -87,12 +83,9 @@ async function sendMessage() {
 /* =========================
    CARREGAR CONVERSA
 ========================= */
-async function loadConversation(id, readonly = false) {
+async function loadConversation(id) {
   conversationId = id;
   sessionStorage.setItem("conversation_id", id);
-
-  isReadOnly = readonly;
-  input.disabled = readonly;
 
   const res = await fetch(`http://127.0.0.1:8000/conversations/${id}/messages`);
   const data = await res.json();
@@ -112,10 +105,6 @@ function newChat() {
 
   conversationId = id;
   sessionStorage.setItem("conversation_id", id);
-
-  isReadOnly = false;
-  input.disabled = false;
-
   messagesDiv.innerHTML = "";
 
   // opcional: atualizar histórico sem reload
@@ -137,7 +126,7 @@ async function loadHistory() {
     div.innerText = conv.last_message || "Nova conversa";
 
     div.onclick = () => {
-      loadConversation(conv.id, true);
+      loadConversation(conv.id);
     };
 
     historyDiv.appendChild(div);
@@ -148,7 +137,7 @@ async function loadHistory() {
    INIT
 ========================= */
 loadHistory();
-loadConversation(conversationId, false);
+loadConversation(conversationId);
 
 /* ENTER */
 input.addEventListener("keypress", (e) => {

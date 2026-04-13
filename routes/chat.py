@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from models.schemas import ChatRequest
 from services.llm import generate_response
 from fastapi.responses import FileResponse
-from db.database import save_message, get_or_create_conversation, get_messages, get_conversations  
+from db.database import save_message, get_or_create_conversation, get_messages, get_conversations, get_context  
 import os 
 
 router = APIRouter()
@@ -31,9 +31,12 @@ def chat(req: ChatRequest):
     # salva mensagem do usuário primeiro 
     save_message(conversation_id, "user", req.message)
 
-    result = generate_response(req.message)
+    context = get_context(conversation_id, 12)
+
+    result = generate_response(req.message, context)
 
     if not result["error"]:
         save_message(conversation_id, "assistant", result["response"])
 
     return result
+
