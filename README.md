@@ -61,7 +61,7 @@ flowchart LR
 ### 1. Clonar o repositório 
 
 ```bash
-git clone https://github.com/seu-usuario/ave.git
+git clone https://github.com/agni000/ave.git
 cd ave
 ```
 
@@ -87,7 +87,7 @@ Crie um arquivo `.env` na **raiz do projeto** (mesmo diretório que `main.py`).
 NVIDIA_API_KEY=sua_chave_nvidia_aqui
 ```
 
-Obtenha a chave na documentação para desenvolvedores / NIM, conforme sua conta NVIDIA.
+Obtenha a chave [aqui](https://build.nvidia.com/mistralai/ministral-14b-instruct-2512).
 
 ---
 
@@ -148,7 +148,7 @@ A mensagem do usuário é sempre salva; a resposta do assistente só é salva qu
 
 ### `GET /historico`
 
-Lista as conversas, da mais recente para a mais antiga.
+Lista as conversas, da mais recente para a mais antiga ao lado do chat principal.
 
 **Resposta:** array JSON de objetos:
 
@@ -182,19 +182,30 @@ Mensagens de uma conversa, da mais antiga para a mais recente.
 
 ---
 
-## Interface web
+## Armazenamento de dados
 
-- Arquivos estáticos são servidos em **`/static`**
-- A interface embutida chama a API em **`http://127.0.0.1:8000`**. Se mudar host ou porta, atualize as URLs do `fetch` em `static/index.html` ou use **URLs relativas** (por exemplo `fetch("/", { method: "POST", ... })`) para que a origem acompanhe a página.
+* **Arquivo do banco:** `db/ave.db` (criado na primeira subida do servidor via `init_db()`).
+
+### conversations
+
+| Campo          | Tipo     | Descrição                              |
+| -------------- | -------- | -------------------------------------- |
+| `id`           | TEXT     | Identificador único da conversa (UUID) |
+| `created_at`   | DATETIME | Data de criação da conversa            |
+| `last_message` | TEXT     | Prévia da última mensagem              |
+| `updated_at`   | DATETIME | Data da última atualização             |
 
 ---
 
-## Armazenamento de dados
+### messages
 
-- **Arquivo do banco:** `db/ave.db` (criado na primeira subida do servidor via `init_db()`).
-- **Tabelas:**
-  - `conversations` — `id`, prévia em `last_message`, datas.
-  - `messages` — `conversation_id`, `role`, `content`, `created_at`.
+| Campo             | Tipo     | Descrição                                 |
+| ----------------- | -------- | ----------------------------------------- |
+| `id`              | INTEGER  | Identificador único (autoincremento)      |
+| `conversation_id` | TEXT     | ID da conversa associada                  |
+| `role`            | TEXT     | Papel da mensagem (`user` ou `assistant`) |
+| `content`         | TEXT     | Conteúdo da mensagem                      |
+| `created_at`      | DATETIME | Data de criação da mensagem               |
 
 ---
 
@@ -202,23 +213,23 @@ Mensagens de uma conversa, da mais antiga para a mais recente.
 
 ```
 ave/
-├── main.py              # App FastAPI, CORS, estáticos, init do BD na subida
+├── main.py              # Entry-point  
 ├── requirements.txt
-├── .env                 # só na sua máquina — você cria; não vai pro git
+├── .env                 # precisa ser criado depois de clonar o repo  
 ├── core/
 │   ├── config.py        # ambiente / NVIDIA_API_KEY
-│   └── text_utils.py    # utilitários de prévia de texto
+│   └── text_utils.py    # utilitários que melhoram o preview de textos no histórico 
 ├── db/
 │   ├── database.py      # SQLite, esquema, helpers de persistência
-│   └── ave.db           # gerado em tempo de execução (gitignored)
+│   └── ave.db           # gerado em tempo de execução 
 ├── models/
-│   └── schemas.py       # modelos Pydantic de requisição
+│   └── schemas.py       # modelo simples para as requisições 
 ├── routes/
 │   └── chat.py          # rotas HTTP: UI, chat, histórico
 ├── services/
 │   └── llm.py           # cliente NVIDIA + histórico em memória
 └── static/
-    └── index.html       # UI do chat (marked.js via CDN)
+    └── index.html       # UI do chat
 ```
 
 ## Limitações
