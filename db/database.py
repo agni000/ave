@@ -1,5 +1,4 @@
 import sqlite3
-import uuid
 import os
 from core.text_utils import make_preview
 
@@ -79,6 +78,27 @@ def save_message(conversation_id: str, role: str, content: str):
     conn.commit()
     conn.close()
 
+def get_conversations():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, last_message, updated_at
+        FROM conversations
+        ORDER BY updated_at DESC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": row[0],
+            "last_message": row[1],
+            "updated_at": row[2]
+        }
+        for row in rows
+    ]
 
 def get_messages(conversation_id: str):
     conn = get_connection()
