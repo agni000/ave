@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from models.schemas import ChatRequest
 from services.llm import generate_response
 from fastapi.responses import FileResponse
