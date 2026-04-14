@@ -1,10 +1,11 @@
 import requests
 from core.config import NVIDIA_API_KEY
 
+# Constantes: endpoint do modelo e tempo máximo de espera 
 URL = "https://integrate.api.nvidia.com/v1/chat/completions"
-
 REQUEST_TIMEOUT = 30
 
+# Definição do comportamento do modelo 
 system_prompt = """You are a Chemistry tutor.
     Rules:
     - Respond in Portuguese
@@ -15,7 +16,22 @@ system_prompt = """You are a Chemistry tutor.
     - Never invent chemical compounds or minerals
     - If unknown, say: "Não tenho certeza sobre isso" """ 
 
+
 def generate_response(message, context):
+    """
+    Função que envia request para o modelo e retorna resposta gerada 
+
+    Args:
+        - message: mensagem enviada pelo usuário
+        - context: Lista de mensagens anteriores para contexto 
+
+    Returns: 
+        dict:
+            - error: indica se houve erro
+            - response: resposta do modelo 
+            - message: descrição do erro para caso de falhas
+    """
+
     headers = {
         "Authorization": f"Bearer {NVIDIA_API_KEY}",
         "Accept": "application/json"
@@ -31,8 +47,14 @@ def generate_response(message, context):
     payload = {
         "model": "mistralai/ministral-14b-instruct-2512",
         "messages": messages,
+
+        # Limite máximo de tokens na resposta 
         "max_tokens": 600,
+
+        # Controla aleatoriedade 
         "temperature": 0.2,
+
+        # Define o conjunto de palavras aceitáveis com base na probabilidade acumulada das opções mais prováveis.
         "top_p": 0.95,
         "stream": False
     }
