@@ -47,7 +47,7 @@ def chat(req: ChatRequest):
     context = get_context(conversation_id, 12)
     
     # envia a mensagem e o contexto para o modelo 
-    result = generate_response(req.message, context)
+    result = generate_response(context)
 
     if result["error"]:
         raise HTTPException(

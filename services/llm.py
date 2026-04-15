@@ -13,17 +13,15 @@ system_prompt = """You are a Chemistry tutor.
     - If out of scope: "Posso ajudar apenas com dúvidas de química."
     - Use line breaks or bullet points when helpful  
     - When writing chemical equations, format them clearly (e.g., H2 + O2 →  H2O) 
-    - Never invent chemical compounds or minerals
+    - Never invent chemical compounds or minerals!
     - If unknown, say: "Não tenho certeza sobre isso" """ 
 
-
-def generate_response(message, context):
+def generate_response(context):
     """
     Função que envia request para o modelo e retorna resposta gerada 
 
     Args:
-        - message: mensagem enviada pelo usuário
-        - context: Lista de mensagens anteriores para contexto 
+        - context: Lista de mensagens anteriores para contexto, incluindo a mensagem atual do usuário
 
     Returns: 
         dict:
@@ -40,8 +38,7 @@ def generate_response(message, context):
     # monta histórico
     messages = [
         {"role": "system", "content": system_prompt},
-        *context,
-        {"role": "user", "content": message}
+        *context 
     ]
 
     payload = {
