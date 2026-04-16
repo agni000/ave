@@ -224,7 +224,7 @@ ave/
 ├── routes/
 │   └── chat.py          # rotas HTTP: UI, chat, histórico
 ├── services/
-│   └── llm.py           # cliente NVIDIA + histórico em memória
+│   └── llm.py           # cliente NVIDIA
 └── static/
     ├── index.html       # UI do chat
     └── styles.css       # estilos da interface
